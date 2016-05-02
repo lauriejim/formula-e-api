@@ -4,6 +4,7 @@
   "description": "Formula E data api",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,5 +25,9 @@
   "bugs": {
     "url": "https://github.com/lauriejim/formula-e-api/issues"
   },
-  "homepage": "https://github.com/lauriejim/formula-e-api#readme"
+  "homepage": "https://github.com/lauriejim/formula-e-api#readme",
+  "dependencies": {
+    "lodash": "^4.11.2",
+    "scrape-it": "^2.0.2"
+  }
 }
