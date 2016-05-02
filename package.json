@@ -1,0 +1,28 @@
+{
+  "name": "fe-api",
+  "version": "1.0.0",
+  "description": "Formula E data api",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lauriejim/formula-e-api.git"
+  },
+  "keywords": [
+    "formula",
+    "e",
+    "data",
+    "api",
+    "race",
+    "formula-e",
+    "free"
+  ],
+  "author": "Jim LAURIE",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/lauriejim/formula-e-api/issues"
+  },
+  "homepage": "https://github.com/lauriejim/formula-e-api#readme"
+}
