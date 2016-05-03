@@ -28,6 +28,7 @@
   "homepage": "https://github.com/lauriejim/formula-e-api#readme",
   "dependencies": {
     "lodash": "^4.11.2",
+    "mongoose": "^4.4.14",
     "scrape-it": "^2.0.2"
   }
 }
