@@ -1,16 +1,20 @@
 'use strict';
 
 // dependencies
-var scrapeIt = require('scrape-it');
 var _ = require('lodash');
+var colors = require('colors/safe');
+var scrapeIt = require('scrape-it');
 
 // constants
 var URL_PATTERN = 'http://fia-fe.com/en/all-results/season-{{season}}.aspx';
 var SEASONS_COUNT = 2;
+var CONFIG = {
+  MONGO_PORT: 27017 || process.env.MONGO_PORT
+}
 
 // db connection
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/fe-data');
+mongoose.connect('mongodb://localhost:' + CONFIG.MONGO_PORT + '/fe-data');
 
 // db schema
 var Schema = mongoose.Schema;
@@ -63,14 +67,23 @@ var gpShema = new Schema({
 
 var GP = mongoose.model('gp', gpShema)
 
+// config log's colors
+colors.setTheme({
+  info: 'green',
+  warn: 'yellow',
+  debug: 'blue',
+  error: 'red'
+});
+
 // start scrapper code
 
 for (var season = 1; season <= SEASONS_COUNT; season++) {
   var currentUrl = URL_PATTERN.replace('{{season}}', season);
 
+  // get races of one gp
   scrapeIt(currentUrl, {
     year: 'h1',
-    gp: {
+    races: {
       listItem: '.event1',
       data: {
         name: 'h2',
@@ -96,15 +109,18 @@ for (var season = 1; season <= SEASONS_COUNT; season++) {
     }
   }, function(err, seasons) {
     if (err) {
-      console.log('Error get seasons:', err);
+      console.log(colors.error('Fail to scrape season data:'), err);
       return false;
     }
 
-    console.log('Load season: ' + seasons.year);
+    console.log(colors.info('Start scrapping:'), 'season ' + seasons.year);
 
-    _.forEach(seasons.gp, function(gp) {
-      if (gp.round) {
-        scrapeIt(gp.link, {
+    // loop in egp of one season
+    _.forEach(seasons.races, function(egp) {
+      if (egp.round) {
+
+        // get egp informations
+        scrapeIt(egp.link, {
           grids: {
             listItem: 'table.res_table',
             data: {
@@ -136,10 +152,11 @@ for (var season = 1; season <= SEASONS_COUNT; season++) {
           }
         }, function(err, result) {
           if (err) {
-            console.log('Error get gp results:', err);
+            console.log(colors.error('Fail to scrape egp results:'), err);
             return false;
           }
 
+          // get race and qualifying results
           var race = _.find(result.grids, {'name': 'Race results'});
           var qualifying = _.find(result.grids, {'name': 'Qualifying results'});
 
@@ -147,19 +164,31 @@ for (var season = 1; season <= SEASONS_COUNT; season++) {
 
           var newGP = new GP({
             season: seasons.year,
-            name: gp.name,
-            date: gp.date,
-            round: gp.round,
-            link: gp.link,
+            name: egp.name,
+            date: egp.date,
+            round: egp.round,
+            link: egp.link,
             race: race.results,
             qualifying: qualifying.results,
-            ref: seasons.year + '-' + gp.round
+            ref: seasons.year + '-' + egp.round
           });
 
+          // save new egp in database
           newGP.save(function(err) {
-            if(err){
-              console.log('Error insert in db: ', err);
+            var errorCode;
+            if (err) {
+              errorCode = err.message.split(' ')[0];
+
+              if(errorCode === 'E11000'){
+                console.log(colors.warn('This egp already exist in database:'), seasons.year + ' - ' + egp.name + ' - round: ' + egp.round);
+              } else {
+                console.log(colors.warn('Fail to insert in database: '), err.message);
+              }
+
+              return false;
             }
+
+            console.log(colors.info('New egp in database:'), seasons.year + ' - ' + egp.name + ' - round: ' + egp.round);
           });
         });
       }
