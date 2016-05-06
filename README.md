@@ -1,4 +1,4 @@
-# Formula E data scrapper
+# Formula E data scraper
 
 > This is a really simple scraper for Formula E ePrix data. It's base on official site http://fia-fe.com
 
